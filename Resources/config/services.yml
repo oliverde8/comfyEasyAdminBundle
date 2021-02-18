@@ -1,0 +1,14 @@
+parameters:
+
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: true
+
+  oliverde8\ComfyEasyAdminBundle\Services\:
+    resource: "../../Services/*"
+
+  oliverde8\ComfyEasyAdminBundle\Controller\:
+    resource: '../../Controller/*'
+    tags: ['controller.service_arguments']

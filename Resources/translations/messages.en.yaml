@@ -1,0 +1,8 @@
+comfy:
+  config: "System Config"
+  dummy:
+    name: Dummy Configs
+    level1:
+      name: Sub Level1
+      level2:
+        name: Sub Level2

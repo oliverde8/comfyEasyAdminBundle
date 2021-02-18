@@ -1,0 +1,105 @@
+{# @var ea \EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext #}
+{% extends '@EasyAdmin/layout.html.twig' %}
+{% form_theme form '@EasyAdmin/crud/form_theme.html.twig' %}
+
+{% block page_title %}
+Edit Config -
+{% endblock page_title %}
+
+{% macro scope_links(scopes, currentScope) %}
+    {% for scopeKey, scopeData in scopes %}
+        <option
+            {% if currentScope == scopeKey %} selected {% endif %}
+            value="{{ scopeKey }}"
+        >
+            {{ scopeData.name }}
+        </option>
+
+        {% if scopeData.sub_scopes %}
+            <optgroup label="{{ scopeData.name }}">
+                {{ _self.scope_links(scopeData.sub_scopes, currentScope) }}
+            </optgroup>
+        {% endif %}
+    {% endfor %}
+{% endmacro %}
+
+{% macro config_tree(configs, parent, currentScope) %}
+    {% for configKey, config in configs %}
+        {% if config is iterable %}
+            <li>
+                {% set subElements = _self.config_tree(config, parent ~ "." ~ configKey, currentScope) %}
+
+                {% if subElements|replace({' ': ''}) == "" %}
+                    <a href="{{ ea_url().setRoute('comfy_configs', {"scope": currentScope, "config": parent ~ "." ~ configKey}) }}">
+                        {{ ("comfy" ~ parent ~ "." ~ configKey ~ ".name")|trans }}
+                    </a>
+                {% else %}
+                    {{ ("comfy" ~ parent ~ "." ~ configKey ~ ".name")|trans }}
+                    <ul>
+                        {{ subElements }}
+                    </ul>
+                {% endif %}
+            </li>
+        {% endif %}
+    {% endfor %}
+{% endmacro %}
+
+{% block content %}
+
+    {{ form_start(form) }}
+
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item dropdown">
+                        <select>
+                            {{ _self.scope_links(scopes.sub_scopes, scope) }}
+                        </select>
+                    </li>
+                </ul>
+                <div class="my-2 my-lg-0">
+                    {{ form_row(form.save) }}
+                </div>
+            </div>
+        </nav>
+
+        <div class="mt-2">
+            <div class="row">
+                <div class="col-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <ul>
+                                {{ _self.config_tree(config_tree, "", scope) }}
+
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-9">
+                    <div class="card">
+                        <div class="card-body">
+                            {% for config_key in config_keys %}
+                                <div class="row">
+                                    <div class="col-8">
+                                        {{ form_row(attribute(form, "value:" ~ config_key)) }}
+                                    </div>
+                                    <div class="col-4">
+                                        {{ form_row(attribute(form, "use_parent:" ~ config_key)) }}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{ form_errors(form) }}
+
+    {{ form_end(form) }}
+{% endblock content %}
+
+
