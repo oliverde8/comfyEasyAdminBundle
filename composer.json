@@ -1,5 +1,5 @@
 {
-  "name": "oliverde/comfy-easy-admin-bundle",
+  "name": "oliverde8/comfy-easy-admin-bundle",
   "type": "library",
   "description": "Add interfaces to edit comfy configurations in easy admin.",
   "license": "MIT",
@@ -11,7 +11,7 @@
   ],
   "require": {
     "php": ">=7.4.0",
-    "oliverde/comfy-bundle": "dev-master",
+    "oliverde8/comfy-bundle": "dev-master",
     "easycorp/easyadmin-bundle": "^3.2"
   },
   "autoload": {
