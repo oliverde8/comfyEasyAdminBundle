@@ -2,7 +2,30 @@ comfy:
   config: "System Config"
   dummy:
     name: Dummy Configs
-    level1:
-      name: Sub Level1
-      level2:
-        name: Sub Level2
+    generic:
+      name: Website Configuration
+    services:
+      name: "Configure services"
+      pim:
+        name: "PIM"
+      erp:
+        name: "ERP"
+      crm:
+        name: "CRM"
+    catalog:
+      name: "Catalog"
+      product:
+        name: "Product"
+      price:
+        name: "Price display"
+      category:
+        name: "Category"
+      search:
+        name: "Search"
+    user_accounts:
+      name: "User/Customer"
+      fields:
+          name: "Mandatory fields"
+      address:
+        name: "Address"
+
