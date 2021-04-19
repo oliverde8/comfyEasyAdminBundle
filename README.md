@@ -48,10 +48,12 @@ comfy_bundle:
 
 You are ready to go, to create configuration elements check comfy bundles [documentation](https://github.com/oliverde8/comfyBundle)
 
+## Permissions
+
+By default any one with access to the EasyAdmin interface can edit any configuration. 
+
+To limit this rewrite the `ConfigEditVoter` service with your own.
+
 ## TODO
 
-- [ ] When scope select is changed redirect to correct page. :warning:
-- [ ] Add default always true voter & document howto change.
-- [ ] Fix after submit not refreshing for data.
-- [ ] Add validation to the config controller for both scope and config path
-- [ ] Allow config controller to load without a config path.
+- [ ] Allow separate view & edit permission.

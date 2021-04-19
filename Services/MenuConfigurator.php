@@ -26,28 +26,7 @@ class MenuConfigurator
 
     public function getMenuItem()
     {
-        $menuItem = $this->getRecursiveMenuItem(0, '', $this->config->getAllConfigs()->getArray());
-        if (is_null($menuItem)) {
-            return MenuItem::linktoRoute("No config found!", null, "comfy_configs");
-        }
-
-        return $menuItem;
-    }
-
-    protected function getRecursiveMenuItem($level, $parent, $configItems)
-    {
-        foreach ($configItems as $key => $config) {
-            if (is_object($config)) {
-                return null;
-            }
-            $child = $this->getRecursiveMenuItem($level + 1,  $parent . "." . $key, $config);
-
-            if (is_null($child)) {
-                $name = $this->translator->trans('comfy.config');
-                return MenuItem::linktoRoute($name, 'fas fa-sliders-h', "comfy_configs", ['config' => $parent . "." . $key]);
-            } else {
-                return $child;
-            }
-        }
+        $name = $this->translator->trans('comfy.config');
+        return MenuItem::linktoRoute($name, 'fas fa-sliders-h', "comfy_configs");
     }
 }

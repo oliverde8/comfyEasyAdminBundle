@@ -6,18 +6,18 @@
 Edit Config -
 {% endblock page_title %}
 
-{% macro scope_links(scopes, currentScope) %}
+{% macro scope_links(scopes, currentScope, configPath) %}
     {% for scopeKey, scopeData in scopes %}
         <option
             {% if currentScope == scopeKey %} selected {% endif %}
-            value="{{ scopeKey }}"
+            value="{{ ea_url().setRoute('comfy_configs', {"scope": scopeKey, "config": configPath}) }}"
         >
             {{ scopeData.name }}
         </option>
 
         {% if scopeData.sub_scopes %}
             <optgroup label="{{ scopeData.name }}">
-                {{ _self.scope_links(scopeData.sub_scopes, currentScope) }}
+                {{ _self.scope_links(scopeData.sub_scopes, currentScope, configPath) }}
             </optgroup>
         {% endif %}
     {% endfor %}
@@ -55,8 +55,8 @@ Edit Config -
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav mr-auto">
                     <li class="nav-item dropdown">
-                        <select>
-                            {{ _self.scope_links(scopes.sub_scopes, scope) }}
+                        <select onchange="location = this.options[this.selectedIndex].value;">
+                            {{ _self.scope_links(scopes.sub_scopes, scope, config_path) }}
                         </select>
                     </li>
                 </ul>
@@ -81,12 +81,14 @@ Edit Config -
                 <div class="col-9">
                     <div class="card">
                         <div class="card-body">
+                            {{ form_errors(form) }}
+
                             {% for config_key in config_keys %}
-                                <div class="row">
-                                    <div class="col-8">
+                                <div class="row config-entry">
+                                    <div class="col-8 config-entry__input">
                                         {{ form_row(attribute(form, "value:" ~ config_key)) }}
                                     </div>
-                                    <div class="col-4">
+                                    <div class="col-4 config-entry__use-parent">
                                         {{ form_row(attribute(form, "use_parent:" ~ config_key)) }}
                                     </div>
                                 </div>
@@ -97,9 +99,33 @@ Edit Config -
             </div>
         </div>
 
-        {{ form_errors(form) }}
-
     {{ form_end(form) }}
+
+
+    <script>
+        $( document ).ready(function() {
+            $('.config-entry').each(function () {
+                let $configEntry = $(this);
+                let $mainInput = $configEntry.find('.config-entry__input input, .config-entry__input textarea,.config-entry__input select');
+                let $useParentCheckbox = $configEntry.find('.config-entry__use-parent input');
+
+                let handleUseParentChange = function (){
+                    console.log('CHANGE');
+                    console.log($useParentCheckbox.is(":checked"));
+                    if ($useParentCheckbox.is(":checked")) {
+                        $mainInput.attr('required', false);
+                        $mainInput.prop('disabled', true);
+                    } else {
+                        $mainInput.attr('required', true);
+                        $mainInput.prop('disabled', false);
+                    }
+                }
+
+                handleUseParentChange();
+                $useParentCheckbox.change(handleUseParentChange);
+            })
+        });
+    </script>
 {% endblock content %}
 
 

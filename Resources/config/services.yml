@@ -9,6 +9,10 @@ services:
   oliverde8\ComfyEasyAdminBundle\Services\:
     resource: "../../Services/*"
 
+  oliverde8\ComfyEasyAdminBundle\Security\:
+    resource: "../../Security/*"
+
   oliverde8\ComfyEasyAdminBundle\Controller\:
     resource: '../../Controller/*'
     tags: ['controller.service_arguments']
+

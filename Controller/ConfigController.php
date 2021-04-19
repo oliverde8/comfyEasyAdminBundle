@@ -3,14 +3,17 @@
 namespace oliverde8\ComfyEasyAdminBundle\Controller;
 
 
+use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
 use oliverde8\ComfyBundle\Form\Type\ConfigsForm;
 use oliverde8\ComfyBundle\Manager\ConfigDisplayManager;
 use oliverde8\ComfyBundle\Manager\ConfigManagerInterface;
 use oliverde8\ComfyBundle\Model\ConfigInterface;
 use oliverde8\ComfyBundle\Resolver\ScopeResolverInterface;
+use oliverde8\ComfyEasyAdminBundle\Security\Voter\ConfigEditVoter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
 class ConfigController extends AbstractController
@@ -39,46 +42,110 @@ class ConfigController extends AbstractController
      */
     public function index(Request $request): Response
     {
-        // TODO validate scope.
-        $scope = $this->scopeResolver->getScope($request->get("scope", null));
-        // TODO validate config path.
-        $configPath = $request->get('config',  null);
-        $configPath = str_replace(".", "/", $configPath);
-        $configPath = ltrim($configPath, '/');
-
-        /** @var ConfigInterface[] $configs */
-        $configs = $this->configManger->getAllConfigs()->get($configPath);
+        $scope = $this->getConfigScopeFromRequest($request);
+        $configPath = $this->getConfigPathFromRequest($request);
+        $configs = $this->getConfigsForPath($configPath);
 
         $form = $this->createForm(ConfigsForm::class, ['scope' => $scope, 'configs' => $configs]);
         $form->handleRequest($request);
         if ($form->isSubmitted()) {
-            $data = $form->getData();
-
-            foreach ($configs as $config) {
-                $configName = $this->configDisplayManager->getConfigHtmlName($config);
-                $valueName = 'value:' . $configName;
-                $useParentName = 'use_parent:' . $configName;
-
-                if ($data[$useParentName]) {
-                    $config->set(null, $scope);
-                } else {
-                    $config->set($data[$valueName], $scope);
-                }
+            if ($form->isValid()) {
+                // We need to recreate the form because config won't take their inheritance properly into account untill all
+                // of them are saved.
+                $form = $this->createForm(ConfigsForm::class, ['scope' => $scope, 'configs' => $configs]);
             }
-
-            return $this->redirectToRoute($request->get('_route'), $request->query->all());
         }
 
         return $this->render(
             "@oliverde8ComfyEasyAdmin/config.html.twig",
             [
                 'form' => $form->createView(),
+                'config_path' => $configPath,
                 'config_keys' => $this->getConfigKeys($configs),
                 'config_tree' => $this->configManger->getAllConfigs()->getArray(),
                 'scope' => $scope,
                 'scopes' => $this->configDisplayManager->getScopeTreeForHtml(),
             ]
         );
+    }
+
+
+    /**
+     * Get the config path to use.
+     *
+     * @param Request $request
+     * @return string
+     */
+    protected function getConfigPathFromRequest(Request $request): string
+    {
+        $configPath = $request->get('config',  null);
+        $configPath = str_replace(".", "/", $configPath);
+        $configPath = ltrim($configPath, '/');
+
+        if (empty($configPath)) {
+            $configPath = $this->configDisplayManager->getRecursiveFirstConfigPath($this->configManger->getAllConfigs()->getArray());
+            $configPath = ltrim($configPath, '/');
+        }
+
+        return $configPath;
+    }
+
+    /**
+     * Get the scope we are editing the configs for.
+     *
+     * @param Request $request
+     * @return string
+     */
+    protected function getConfigScopeFromRequest(Request $request): string
+    {
+        $scope = $this->scopeResolver->getScope($request->get("scope", null));
+
+        if (!$this->scopeResolver->validateScope($scope)) {
+            throw new NotFoundHttpException("Unknown scope.");
+        }
+
+        return $scope;
+    }
+
+    /**
+     * Get modifiable configs for this path.
+     *
+     * @param Request $request
+     * @return ConfigInterface[]
+     *
+     * @throws NotFoundHttpException
+     */
+    protected function getConfigsForPath(string $configPath): array
+    {
+        /** @var ConfigInterface[] $configs */
+        $configs = $this->configManger->getAllConfigs()->get($configPath, []);
+        $configs = $this->filterAllowedConfigs($configs);
+
+        if (empty($configs)) {
+            throw new NotFoundHttpException("Unknown config path.");
+        }
+
+        return $configs;
+    }
+
+    /**
+     * @param ConfigInterface[] $configs
+     * @return array
+     */
+    protected function filterAllowedConfigs(array $configs)
+    {
+        $allowedConfigs = [];
+        foreach ($configs as $config) {
+            if ($config->isHidden()) {
+                continue;
+            }
+
+            if ($this->isGranted(ConfigEditVoter::ACTION_NEW, $config)) {
+                $allowedConfigs[] = $config;
+            }
+        }
+
+        return $allowedConfigs;
     }
 
     /**
