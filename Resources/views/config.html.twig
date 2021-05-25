@@ -6,19 +6,17 @@
 Edit Config -
 {% endblock page_title %}
 
-{% macro scope_links(scopes, currentScope, configPath) %}
+{% macro scope_links(scopes, currentScope, configPath, spaces) %}
     {% for scopeKey, scopeData in scopes %}
         <option
             {% if currentScope == scopeKey %} selected {% endif %}
             value="{{ ea_url().setRoute('comfy_configs', {"scope": scopeKey, "config": configPath}) }}"
         >
-            {{ scopeData.name }}
+            {{ spaces|raw }}{{ scopeData.name }}
         </option>
 
         {% if scopeData.sub_scopes %}
-            <optgroup label="{{ scopeData.name }}">
-                {{ _self.scope_links(scopeData.sub_scopes, currentScope, configPath) }}
-            </optgroup>
+            {{ _self.scope_links(scopeData.sub_scopes, currentScope, configPath, spaces ~ "&nbsp;&nbsp;&nbsp;&nbsp;") }}
         {% endif %}
     {% endfor %}
 {% endmacro %}
@@ -56,7 +54,7 @@ Edit Config -
                 <ul class="navbar-nav mr-auto">
                     <li class="nav-item dropdown">
                         <select onchange="location = this.options[this.selectedIndex].value;">
-                            {{ _self.scope_links(scopes.sub_scopes, scope, config_path) }}
+                            {{ _self.scope_links(scopes.sub_scopes, scope, config_path, '') }}
                         </select>
                     </li>
                 </ul>
