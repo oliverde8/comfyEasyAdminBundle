@@ -84,10 +84,12 @@ Edit Config -
                             {% for config_key in config_keys %}
                                 <div class="row config-entry">
                                     <div class="col-8 config-entry__input">
-                                        {{ form_row(attribute(form, "value:" ~ config_key)) }}
+                                        <div class="col-12 config-entry__input">
+                                            {{ form_row(attribute(form, config_key).value) }}
+                                        </div>
                                     </div>
                                     <div class="col-4 config-entry__use-parent">
-                                        {{ form_row(attribute(form, "use_parent:" ~ config_key)) }}
+                                        {{ form_row(attribute(form, config_key).use_parent) }}
                                     </div>
                                 </div>
                             {% endfor %}
