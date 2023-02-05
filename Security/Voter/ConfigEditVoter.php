@@ -14,7 +14,7 @@ class ConfigEditVoter extends Voter
     /**
      * @inheritDoc
      */
-    protected function supports($attribute, $subject)
+    protected function supports(string $attribute, mixed $subject): bool
     {
         return in_array($attribute, self::ACTIONS) && $subject instanceof \oliverde8\ComfyBundle\Model\ConfigInterface;
     }
@@ -22,7 +22,7 @@ class ConfigEditVoter extends Voter
     /**
      * @inheritDoc
      */
-    protected function voteOnAttribute($attribute, $subject, TokenInterface $token)
+    protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
     {
         return true;
     }
