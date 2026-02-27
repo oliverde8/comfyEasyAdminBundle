@@ -3,7 +3,6 @@
 namespace oliverde8\ComfyEasyAdminBundle\Controller;
 
 
-use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
 use oliverde8\ComfyBundle\Form\Type\ConfigsForm;
 use oliverde8\ComfyBundle\Manager\ConfigDisplayManager;
 use oliverde8\ComfyBundle\Manager\ConfigManagerInterface;
@@ -14,32 +13,18 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
 class ConfigController extends AbstractController
 {
-    protected ConfigManagerInterface $configManger;
-    protected ScopeResolverInterface $scopeResolver;
-    protected ConfigDisplayManager $configDisplayManager;
-
-    /**
-     * ConfigController constructor.
-     *
-     * @param ConfigManagerInterface $configManger
-     * @param ScopeResolverInterface $scopeResolver
-     * @param ConfigDisplayManager $configDisplayManager
-     */
-    public function __construct(ConfigManagerInterface $configManger, ScopeResolverInterface $scopeResolver, ConfigDisplayManager $configDisplayManager)
-    {
-        $this->configManger = $configManger;
-        $this->scopeResolver = $scopeResolver;
-        $this->configDisplayManager = $configDisplayManager;
+    public function __construct(
+        protected ConfigManagerInterface $configManger,
+        protected ScopeResolverInterface $scopeResolver,
+        protected ConfigDisplayManager $configDisplayManager
+    ) {
     }
 
-
-    /**
-     * @Route("/comfy/configs", name="comfy_configs")
-     */
+    #[Route('/comfy/configs', name: 'comfy_configs')]
     public function index(Request $request): Response
     {
         $scope = $this->getConfigScopeFromRequest($request);
@@ -48,12 +33,10 @@ class ConfigController extends AbstractController
 
         $form = $this->createForm(ConfigsForm::class, ['scope' => $scope, 'configs' => $configs]);
         $form->handleRequest($request);
-        if ($form->isSubmitted()) {
-            if ($form->isValid()) {
-                // We need to recreate the form because config won't take their inheritance properly into account untill all
-                // of them are saved.
-                $form = $this->createForm(ConfigsForm::class, ['scope' => $scope, 'configs' => $configs]);
-            }
+        if ($form->isSubmitted() && $form->isValid()) {
+            // We need to recreate the form because config won't take their inheritance properly into account untill all
+            // of them are saved.
+            $form = $this->createForm(ConfigsForm::class, ['scope' => $scope, 'configs' => $configs]);
         }
 
         return $this->render(
@@ -78,7 +61,7 @@ class ConfigController extends AbstractController
      */
     protected function getConfigPathFromRequest(Request $request): string
     {
-        $configPath = $request->get('config',  null);
+        $configPath = $request->query->get('config',  null);
         $configPath = str_replace(".", "/", $configPath);
         $configPath = ltrim($configPath, '/');
 
@@ -98,7 +81,7 @@ class ConfigController extends AbstractController
      */
     protected function getConfigScopeFromRequest(Request $request): string
     {
-        $scope = $this->scopeResolver->getScope($request->get("scope", null));
+        $scope = $this->scopeResolver->getScope($request->query->get("scope", null));
 
         if (!$this->scopeResolver->validateScope($scope)) {
             throw new NotFoundHttpException("Unknown scope.");
@@ -157,7 +140,7 @@ class ConfigController extends AbstractController
         $data = [];
         foreach ($configs as $config) {
             $name = $this->configDisplayManager->getConfigHtmlName($config);
-            $data[$config->getPath()] = $request->get($name);
+            $data[$config->getPath()] = $request->query->get($name);
         }
     }
 
