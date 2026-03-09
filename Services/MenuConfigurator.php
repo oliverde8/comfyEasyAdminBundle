@@ -9,18 +9,10 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class MenuConfigurator
 {
-    protected ConfigManagerInterface $config;
-
-    protected TranslatorInterface $translator;
-
-    /**
-     * MenuConfigurator constructor.
-     * @param ConfigManagerInterface $config
-     */
-    public function __construct(ConfigManagerInterface $config, TranslatorInterface  $translator)
-    {
-        $this->config = $config;
-        $this->translator = $translator;
+    public function __construct(
+        protected ConfigManagerInterface $config,
+        protected TranslatorInterface  $translator
+    ) {
     }
 
 
