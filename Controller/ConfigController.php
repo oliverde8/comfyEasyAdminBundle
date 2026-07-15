@@ -61,7 +61,7 @@ class ConfigController extends AbstractController
      */
     protected function getConfigPathFromRequest(Request $request): string
     {
-        $configPath = $request->query->get('config',  null);
+        $configPath = $request->attributes->get('config');
         $configPath = str_replace(".", "/", $configPath);
         $configPath = ltrim($configPath, '/');
 
@@ -81,7 +81,7 @@ class ConfigController extends AbstractController
      */
     protected function getConfigScopeFromRequest(Request $request): string
     {
-        $scope = $this->scopeResolver->getScope($request->query->get("scope", null));
+        $scope = $this->scopeResolver->getScope($request->attributes->get('config'));
 
         if (!$this->scopeResolver->validateScope($scope)) {
             throw new NotFoundHttpException("Unknown scope.");
