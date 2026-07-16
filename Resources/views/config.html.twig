@@ -103,27 +103,23 @@ Edit Config -
 
 
     <script>
-        $( document ).ready(function() {
-            $('.config-entry').each(function () {
-                let $configEntry = $(this);
-                let $mainInput = $configEntry.find('.config-entry__input input, .config-entry__input textarea,.config-entry__input select');
-                let $useParentCheckbox = $configEntry.find('.config-entry__use-parent input');
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.config-entry').forEach(function (configEntry) {
+                const mainInputs = configEntry.querySelectorAll(
+                    '.config-entry__input input, .config-entry__input textarea, .config-entry__input select'
+                );
+                const useParentCheckbox = configEntry.querySelector('.config-entry__use-parent input');
 
-                let handleUseParentChange = function (){
-                    console.log('CHANGE');
-                    console.log($useParentCheckbox.is(":checked"));
-                    if ($useParentCheckbox.is(":checked")) {
-                        $mainInput.attr('required', false);
-                        $mainInput.prop('disabled', true);
-                    } else {
-                        $mainInput.attr('required', true);
-                        $mainInput.prop('disabled', false);
-                    }
-                }
+                const handleUseParentChange = function () {
+                    mainInputs.forEach(function (input) {
+                        input.required = !useParentCheckbox.checked;
+                        input.disabled = useParentCheckbox.checked;
+                    });
+                };
 
                 handleUseParentChange();
-                $useParentCheckbox.change(handleUseParentChange);
-            })
+                useParentCheckbox.addEventListener('change', handleUseParentChange);
+            });
         });
     </script>
 {% endblock content %}
