@@ -3,14 +3,14 @@
 {% form_theme form '@EasyAdmin/crud/form_theme.html.twig' %}
 
 {% block page_title %}
-Edit Config -
+    Edit Config -
 {% endblock page_title %}
 
 {% macro scope_links(scopes, currentScope, configPath, spaces) %}
     {% for scopeKey, scopeData in scopes %}
         <option
-            {% if currentScope == scopeKey %} selected {% endif %}
-            value="{{ ea_url().setRoute('comfy_configs', {"scope": scopeKey, "config": configPath}) }}"
+                {% if currentScope == scopeKey %} selected {% endif %}
+                value="{{ ea_url().setRoute('comfy_configs', {"scope": scopeKey, "config": configPath}) }}"
         >
             {{ spaces|raw }}{{ scopeData.name }}
         </option>
@@ -21,19 +21,24 @@ Edit Config -
     {% endfor %}
 {% endmacro %}
 
-{% macro config_tree(configs, parent, currentScope) %}
+{% macro config_tree(configs, parent, currentScope, currentConfigPath) %}
     {% for configKey, config in configs %}
         {% if config is iterable %}
+            {% set path = parent ~ "." ~ configKey %}
+            {% set normalizedPath = path|replace({'.': '/'})|trim('/') %}
             <li>
-                {% set subElements = _self.config_tree(config, parent ~ "." ~ configKey, currentScope) %}
+                {% set subElements = _self.config_tree(config, path, currentScope, currentConfigPath) %}
 
                 {% if subElements|replace({' ': ''}) == "" %}
-                    <a href="{{ ea_url().setRoute('comfy_configs', {"scope": currentScope, "config": parent ~ "." ~ configKey}) }}">
-                        {{ ("comfy" ~ parent ~ "." ~ configKey ~ ".name")|trans }}
+                    <a
+                            class="d-block py-1 px-2 rounded text-decoration-none{{ normalizedPath == currentConfigPath ? ' fw-semibold text-primary bg-primary-subtle' : ' link-body-emphasis' }}"
+                            href="{{ ea_url().setRoute('comfy_configs', {"scope": currentScope, "config": path}) }}"
+                    >
+                        {{ ("comfy" ~ path ~ ".name")|trans }}
                     </a>
                 {% else %}
-                    {{ ("comfy" ~ parent ~ "." ~ configKey ~ ".name")|trans }}
-                    <ul>
+                    <span class="d-block py-1 px-2 fw-semibold">{{ ("comfy" ~ path ~ ".name")|trans }}</span>
+                    <ul class="list-unstyled ps-3">
                         {{ subElements }}
                     </ul>
                 {% endif %}
@@ -46,58 +51,60 @@ Edit Config -
 
     {{ form_start(form) }}
 
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav mr-auto">
-                    <li class="nav-item dropdown">
-                        <select onchange="location = this.options[this.selectedIndex].value;">
-                            {{ _self.scope_links(scopes.sub_scopes, scope, config_path, '') }}
-                        </select>
-                    </li>
-                </ul>
-                <div class="my-2 my-lg-0">
-                    {{ form_row(form.save) }}
-                </div>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item dropdown">
+                    <select class="form-select" onchange="location = this.options[this.selectedIndex].value;">
+                        {{ _self.scope_links(scopes.sub_scopes, scope, config_path, '') }}
+                    </select>
+                </li>
+            </ul>
+            <div class="my-2 my-lg-0">
+                {{ form_row(form.save) }}
             </div>
-        </nav>
+        </div>
+    </nav>
 
-        <div class="mt-2">
-            <div class="row">
-                <div class="col-3">
-                    <div class="card">
-                        <div class="card-body">
-                            <ul>
-                                {{ _self.config_tree(config_tree, "", scope) }}
+    <div class="mt-2">
+        <div class="row">
+            <div class="col-3">
+                <div class="card">
+                    <div class="card-body">
+                        <ul class="list-unstyled mb-0">
+                            {{ _self.config_tree(config_tree, "", scope, config_path) }}
 
-                            </ul>
-                        </div>
+                        </ul>
                     </div>
                 </div>
-                <div class="col-9">
-                    <div class="card">
-                        <div class="card-body">
-                            {{ form_errors(form) }}
+            </div>
+            <div class="col-9">
+                <div class="card">
+                    <div class="card-body">
+                        {{ form_errors(form) }}
 
-                            {% for config_key in config_keys %}
-                                <div class="row config-entry">
-                                    <div class="col-8 config-entry__input">
-                                        <div class="col-12 config-entry__input">
-                                            {{ form_row(attribute(form, config_key).value) }}
-                                        </div>
-                                    </div>
-                                    <div class="col-4 config-entry__use-parent">
-                                        {{ form_row(attribute(form, config_key).use_parent) }}
-                                    </div>
+                        {% for config_key in config_keys %}
+                            <div class="row config-entry align-items-center py-2 border-bottom">
+                                <div class="col-8 config-entry__input">
+                                    {{ form_row(attribute(form, config_key).value) }}
                                 </div>
-                            {% endfor %}
-                        </div>
+                                <div class="col-4 config-entry__use-parent">
+                                    <div class="form-check form-switch">
+                                        {{ form_widget(attribute(form, config_key).use_parent, {attr: {class: 'form-check-input'}}) }}
+                                        {{ form_label(attribute(form, config_key).use_parent, null, {label_attr: {class: 'form-check-label'}}) }}
+                                    </div>
+                                    {{ form_errors(attribute(form, config_key).use_parent) }}
+                                </div>
+                            </div>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
     {{ form_end(form) }}
 
@@ -123,5 +130,4 @@ Edit Config -
         });
     </script>
 {% endblock content %}
-
 
