@@ -1,3 +1,12 @@
+# 1.1.0
+
+- :star2: Support for symfony 8.0 and EasyAdmin 5 has been added.
+- :star2: Config tree only lists visible configs the user is allowed to edit.
+- :collision: Config page is registered with `#[AdminRoute]`, route name is now prefixed by the dashboard route (`admin_comfy_configs`). The routing import is no longer needed.
+- :collision: Support for EasyAdmin < 4.24 has been dropped.
+- :wrench: Removed jQuery dependency from the config page.
+- :wrench: Fix scope being read from the `config` parameter.
+
 # 1.0.0
 
 - :star2: Support for symfony 6.0 has been added.
