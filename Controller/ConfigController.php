@@ -3,28 +3,30 @@
 namespace oliverde8\ComfyEasyAdminBundle\Controller;
 
 
+use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminRoute;
 use oliverde8\ComfyBundle\Form\Type\ConfigsForm;
 use oliverde8\ComfyBundle\Manager\ConfigDisplayManager;
 use oliverde8\ComfyBundle\Manager\ConfigManagerInterface;
 use oliverde8\ComfyBundle\Model\ConfigInterface;
 use oliverde8\ComfyBundle\Resolver\ScopeResolverInterface;
+use oliverde8\ComfyBundle\Resolver\VisibleConfigsResolver;
 use oliverde8\ComfyEasyAdminBundle\Security\Voter\ConfigEditVoter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\Routing\Attribute\Route;
 
 class ConfigController extends AbstractController
 {
     public function __construct(
         protected ConfigManagerInterface $configManger,
         protected ScopeResolverInterface $scopeResolver,
-        protected ConfigDisplayManager $configDisplayManager
+        protected ConfigDisplayManager $configDisplayManager,
+        protected VisibleConfigsResolver $visibleConfigsResolver
     ) {
     }
 
-    #[Route('/comfy/configs', name: 'comfy_configs')]
+    #[AdminRoute(path: '/comfy/configs', name: 'comfy_configs')]
     public function index(Request $request): Response
     {
         $scope = $this->getConfigScopeFromRequest($request);
@@ -45,7 +47,7 @@ class ConfigController extends AbstractController
                 'form' => $form->createView(),
                 'config_path' => $configPath,
                 'config_keys' => $this->getConfigKeys($configs),
-                'config_tree' => $this->configManger->getAllConfigs()->getArray(),
+                'config_tree' => $this->getAllowedConfigTree(),
                 'scope' => $scope,
                 'scopes' => $this->configDisplayManager->getScopeTreeForHtml(),
             ]
@@ -61,16 +63,21 @@ class ConfigController extends AbstractController
      */
     protected function getConfigPathFromRequest(Request $request): string
     {
-        $configPath = $request->attributes->get('config');
+        $configPath = (string) $request->query->get('config');
         $configPath = str_replace(".", "/", $configPath);
         $configPath = ltrim($configPath, '/');
 
         if (empty($configPath)) {
-            $configPath = $this->configDisplayManager->getRecursiveFirstConfigPath($this->configManger->getAllConfigs()->getArray());
+            $configPath = $this->configDisplayManager->getRecursiveFirstConfigPath($this->getAllowedConfigTree());
             $configPath = ltrim($configPath, '/');
         }
 
         return $configPath;
+    }
+
+    protected function getAllowedConfigTree(): array
+    {
+        return $this->visibleConfigsResolver->getAllAllowedConfigs(ConfigEditVoter::ACTION_NEW);
     }
 
     /**
@@ -81,7 +88,7 @@ class ConfigController extends AbstractController
      */
     protected function getConfigScopeFromRequest(Request $request): string
     {
-        $scope = $this->scopeResolver->getScope($request->attributes->get('config'));
+        $scope = $this->scopeResolver->getScope($request->query->get('scope'));
 
         if (!$this->scopeResolver->validateScope($scope)) {
             throw new NotFoundHttpException("Unknown scope.");

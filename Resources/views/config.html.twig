@@ -10,7 +10,7 @@
     {% for scopeKey, scopeData in scopes %}
         <option
                 {% if currentScope == scopeKey %} selected {% endif %}
-                value="{{ ea_url().setRoute('comfy_configs', {"scope": scopeKey, "config": configPath}) }}"
+                value="{{ path(app.request.attributes.get('_route'), {"scope": scopeKey, "config": configPath}) }}"
         >
             {{ spaces|raw }}{{ scopeData.name }}
         </option>
@@ -32,7 +32,7 @@
                 {% if subElements|replace({' ': ''}) == "" %}
                     <a
                             class="d-block py-1 px-2 rounded text-decoration-none{{ normalizedPath == currentConfigPath ? ' fw-semibold text-primary bg-primary-subtle' : ' link-body-emphasis' }}"
-                            href="{{ ea_url().setRoute('comfy_configs', {"scope": currentScope, "config": path}) }}"
+                            href="{{ path(app.request.attributes.get('_route'), {"scope": currentScope, "config": path}) }}"
                     >
                         {{ ("comfy" ~ path ~ ".name")|trans }}
                     </a>
