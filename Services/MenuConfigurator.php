@@ -16,9 +16,9 @@ class MenuConfigurator
     }
 
 
-    public function getMenuItem()
+    public function getMenuItem(string $routeName = 'admin_comfy_configs')
     {
         $name = $this->translator->trans('comfy.config');
-        return MenuItem::linktoRoute($name, 'fas fa-sliders-h', "comfy_configs");
+        return MenuItem::linkToRoute($name, 'fas fa-sliders-h', $routeName);
     }
 }

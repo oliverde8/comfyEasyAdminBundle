@@ -45,14 +45,8 @@ and now add the Menu link
     }
 ```
 
-Finally add the add router. 
-
-```yaml
-comfy_bundle:
-    resource: '@oliverde8ComfyEasyAdminBundle/Controller'
-    type: annotation
-    prefix: /admin
-```
+The page is registered as an EasyAdmin route (`#[AdminRoute]`), its name is prefixed with your dashboard's route name.
+If your dashboard route is not `admin`, pass the route name: `$this->menuConfigurator->getMenuItem('mydashboard_comfy_configs')`.
 
 You are ready to go, to create configuration elements check comfy bundles [documentation](https://github.com/oliverde8/comfyBundle)
 
