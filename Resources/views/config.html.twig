@@ -2,9 +2,9 @@
 {% extends '@EasyAdmin/layout.html.twig' %}
 {% form_theme form '@EasyAdmin/crud/form_theme.html.twig' %}
 
-{% block page_title %}
-    Edit Config -
-{% endblock page_title %}
+{% block content_title %}
+    {{ 'comfy.config'|trans }}
+{% endblock content_title %}
 
 {% macro scope_links(scopes, currentScope, configPath, spaces) %}
     {% for scopeKey, scopeData in scopes %}
@@ -47,67 +47,48 @@
     {% endfor %}
 {% endmacro %}
 
-{% block content %}
+{% block page_actions %}
+    <select class="form-select w-auto" onchange="location = this.options[this.selectedIndex].value;">
+        {{ _self.scope_links(scopes.sub_scopes, scope, config_path, '') }}
+    </select>
+    {{ form_widget(form.save, {attr: {form: form.vars.id}}) }}
+{% endblock page_actions %}
 
-    {{ form_start(form) }}
+{% block main %}
+    {{ form_start(form, {attr: {id: form.vars.id}}) }}
 
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav me-auto">
-                <li class="nav-item dropdown">
-                    <select class="form-select" onchange="location = this.options[this.selectedIndex].value;">
-                        {{ _self.scope_links(scopes.sub_scopes, scope, config_path, '') }}
-                    </select>
-                </li>
-            </ul>
-            <div class="my-2 my-lg-0">
-                {{ form_row(form.save) }}
-            </div>
-        </div>
-    </nav>
-
-    <div class="mt-2">
-        <div class="row">
-            <div class="col-3">
-                <div class="card">
-                    <div class="card-body">
-                        <ul class="list-unstyled mb-0">
-                            {{ _self.config_tree(config_tree, "", scope, config_path) }}
-
-                        </ul>
-                    </div>
+    <div class="row g-3">
+        <div class="col-3">
+            <div class="card">
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        {{ _self.config_tree(config_tree, "", scope, config_path) }}
+                    </ul>
                 </div>
             </div>
-            <div class="col-9">
-                <div class="card">
-                    <div class="card-body">
-                        {{ form_errors(form) }}
+        </div>
+        <div class="col-9">
+            <div class="card">
+                <div class="card-body py-0">
+                    {{ form_errors(form) }}
 
-                        {% for config_key in config_keys %}
-                            <div class="row config-entry align-items-center py-2 border-bottom">
-                                <div class="col-8 config-entry__input">
-                                    {{ form_row(attribute(form, config_key).value) }}
-                                </div>
-                                <div class="col-4 config-entry__use-parent">
-                                    <div class="form-check form-switch">
-                                        {{ form_widget(attribute(form, config_key).use_parent, {attr: {class: 'form-check-input'}}) }}
-                                        {{ form_label(attribute(form, config_key).use_parent, null, {label_attr: {class: 'form-check-label'}}) }}
-                                    </div>
-                                    {{ form_errors(attribute(form, config_key).use_parent) }}
-                                </div>
+                    {% for config_key in config_keys %}
+                        <div class="config-entry d-flex align-items-center gap-4 py-3{{ not loop.last ? ' border-bottom' }}">
+                            <div class="config-entry__input flex-grow-1">
+                                {{ form_row(attribute(form, config_key).value, {row_attr: {class: 'pb-0'}}) }}
                             </div>
-                        {% endfor %}
-                    </div>
+                            <div class="config-entry__use-parent flex-shrink-0">
+                                {{ form_widget(attribute(form, config_key).use_parent, {label_attr: {class: 'checkbox-switch'}}) }}
+                                {{ form_errors(attribute(form, config_key).use_parent) }}
+                            </div>
+                        </div>
+                    {% endfor %}
                 </div>
             </div>
         </div>
     </div>
 
     {{ form_end(form) }}
-
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -129,5 +110,5 @@
             });
         });
     </script>
-{% endblock content %}
+{% endblock main %}
 

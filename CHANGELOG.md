@@ -4,6 +4,7 @@
 - :star2: Config tree only lists visible configs the user is allowed to edit.
 - :collision: Config page is registered with `#[AdminRoute]`, route name is now prefixed by the dashboard route (`admin_comfy_configs`). The routing import is no longer needed.
 - :collision: Support for EasyAdmin < 4.24 has been dropped.
+- :star2: Improved design of the config page, now uses EasyAdmin page title and actions.
 - :wrench: Removed jQuery dependency from the config page.
 - :wrench: Fix scope being read from the `config` parameter.
 
